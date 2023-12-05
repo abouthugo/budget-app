@@ -45,6 +45,7 @@ export default function Home() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="amount">Amount</Label>
             <Input
+              pattern="\d*"
               type="text"
               id="amount"
               placeholder="Enter quantity"
