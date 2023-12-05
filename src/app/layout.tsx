@@ -6,7 +6,7 @@ import Link from "next/link";
 import ContextProvider from "./context-provider";
 import "./globals.css";
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
