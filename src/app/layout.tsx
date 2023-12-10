@@ -28,7 +28,7 @@ export default function RootLayout({
       >
         <ContextProvider>
           <MainLayout>
-            <div className="p-4 w-full row-start-1 row-end-7 overflow-scroll">
+            <div className="p-4 w-full row-start-1 row-end-7 overflow-y-scroll overflow-x-hidden">
               {children}
             </div>
             <div className="border-t flex flex-col">

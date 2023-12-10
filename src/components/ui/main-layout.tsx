@@ -7,7 +7,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Div100vh className="grid justify-between grid-cols-1 grid-rows-6">
+    <Div100vh className="grid justify-between grid-cols-1 grid-rows-6 overflow-x-hidden">
       {children}
     </Div100vh>
   );

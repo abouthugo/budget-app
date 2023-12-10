@@ -19,7 +19,7 @@ import { BudgetContext, BudgetEntry } from "./budget-provider";
 
 const DATE_FORMAT = "MMM do h:mm a";
 export default function Home() {
-  const { budgets, addEntry, entries } = useContext(BudgetContext);
+  const { budgets, addEntry, entries, removeEntry } = useContext(BudgetContext);
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,10 +45,11 @@ export default function Home() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="amount">Amount</Label>
             <Input
+              className="text-md"
               pattern="\d*"
               type="text"
               id="amount"
-              placeholder="Enter quantity"
+              placeholder="$"
               step="0.01"
               max="2500"
               value={amount}
@@ -80,26 +81,99 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      <div className="mt-6 flex flex-col space-y-2">
+      <div className="mt-6 flex flex-col space-y-2 overflow-x-hidden">
         <p className="text-center">History</p>
-        {entries.map((entry) => (
-          <EditableComponent key={entry.id} entry={entry} />
-        ))}
+        {entries
+          .slice(0)
+          .reverse()
+          .map((entry) => (
+            <EditableComponent
+              key={entry.id}
+              entry={entry}
+              removeFn={removeEntry}
+            />
+          ))}
       </div>
     </main>
   );
 }
 
-function EditableComponent({ entry }: { entry: BudgetEntry }) {
+function EditableComponent({
+  entry,
+  removeFn,
+}: {
+  entry: BudgetEntry;
+  removeFn: (entry: BudgetEntry) => void;
+}) {
+  const [touchStartX, setTouchStartX] = useState<number>(0);
+  const [touchCurrentX, setTouchCurrentX] = useState<number>(0);
+  const [isSwiping, setIsSwiping] = useState<boolean>(false);
+
+  const minSwipeDistance = 70;
+  const swipeThreshold = 15; // Minimum movement to differentiate swipe from tap
+
+  const move = (x: number) => {
+    return Math.floor(x / 2) * -1;
+  };
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchStartX(move(e.targetTouches[0].clientX));
+    setTouchCurrentX(move(e.targetTouches[0].clientX)); // Initialize touchCurrentX
+    setIsSwiping(false);
+  };
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const currentX = move(e.targetTouches[0].clientX);
+    setTouchCurrentX(currentX);
+    const movementX = Math.abs(touchStartX - currentX);
+    if (movementX > swipeThreshold) {
+      setIsSwiping(true);
+    }
+  };
+
+  const onTouchEnd = () => {
+    const swipeDistance = touchStartX - touchCurrentX;
+
+    if (isSwiping && Math.abs(swipeDistance) > minSwipeDistance) {
+      // Swipe left logic
+      removeFn(entry);
+    }
+
+    // Reset state
+    setTouchStartX(0);
+    setTouchCurrentX(0);
+    setIsSwiping(false);
+  };
+
+  // Calculate the card's position based on the swipe
+  const cardStyle = {
+    transform: isSwiping
+      ? `translateX(${touchStartX - touchCurrentX}px)`
+      : "translateX(0px)",
+    transition: isSwiping
+      ? "none"
+      : "transform 0.3s ease, background 0.3s ease",
+  };
   return (
-    <div className="py-2 px-3 flex justify-between">
+    <div
+      className={`py-2 flex justify-between items-center rounded-md ${
+        isSwiping && Math.abs(touchStartX - touchCurrentX) > minSwipeDistance
+          ? "bg-red-800"
+          : ""
+      }`}
+      style={{ ...cardStyle }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <div>
         <span className="text-xs text-lime-600 p-1 font-bold">
           {entry.category}
         </span>
       </div>
       <div className="flex space-x-8">
-        <div>{formatRelative(entry.date, new Date())}</div>
+        <p className="w-40 truncate">
+          {formatRelative(entry.date, new Date())}
+        </p>
         <div>${entry.amount}</div>
       </div>
     </div>

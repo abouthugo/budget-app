@@ -1,9 +1,9 @@
 "use client";
 import { ReactNode, createContext, useEffect, useState } from "react";
 
-interface Budgets {
+type Budgets = {
   [key: string]: number;
-}
+};
 
 export type BudgetEntry = {
   id: string;
@@ -16,6 +16,7 @@ interface BudgetContextType {
   budgets: Budgets;
   entries: BudgetEntry[];
   addEntry: (entry: BudgetEntry) => void;
+  removeEntry: (entry: BudgetEntry) => void;
   editEntry: (editedEntry: BudgetEntry) => void;
   addBudget: (budget: string) => void;
   removeBudget: (budget: string) => void;
@@ -26,6 +27,7 @@ export const BudgetContext = createContext<BudgetContextType>({
   budgets: { dining: 0, transport: 0, misc: 0 },
   entries: [],
   addEntry: () => {},
+  removeEntry: () => {},
   editEntry: () => {},
   addBudget: () => {},
   removeBudget: () => {},
@@ -62,7 +64,18 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
       entry.id === editedEntry.id ? editedEntry : entry
     );
     setEntries(updatedEntries);
-    // TODO@hugo: Implement logic to update totals
+    // TODO@hugo: Implement logic to update totals & local storage
+  };
+
+  const removeEntry = (entry: BudgetEntry) => {
+    const filteredEntries = entries.filter((iEntry) => iEntry.id !== entry.id);
+    setEntries(filteredEntries);
+    let newBudgets = Object.assign({}, budgets);
+    newBudgets[entry.category] -= Number(entry.amount);
+
+    setBudgets(newBudgets);
+    localStorage.setItem(ENTRIES, JSON.stringify(filteredEntries));
+    localStorage.setItem(BUDGETS, JSON.stringify(newBudgets));
   };
 
   const addBudget = (budget: string) => {
@@ -89,7 +102,15 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
 
   return (
     <BudgetContext.Provider
-      value={{ budgets, entries, addEntry, editEntry, addBudget, removeBudget }}
+      value={{
+        budgets,
+        entries,
+        addEntry,
+        removeEntry,
+        editEntry,
+        addBudget,
+        removeBudget,
+      }}
     >
       {children}
     </BudgetContext.Provider>
