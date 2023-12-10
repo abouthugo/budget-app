@@ -6,7 +6,7 @@ import { BudgetContext } from "../budget-provider";
 
 export default function BudgetPage() {
   const [newCategory, setNewCategory] = useState("");
-  const { budgets, addBudget, removeBudget } = useContext(BudgetContext);
+  const { budgets, addBudget } = useContext(BudgetContext);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -27,15 +27,20 @@ export default function BudgetPage() {
   return (
     <div>
       <h1 className="font-bold text-xl pb-5">Budgets</h1>
-      <p className="text-sm">Add New Budget Category</p>
+      <p className="text-md">Add New Budget Category</p>
       <form
         onSubmit={handleSubmit}
         className="flex w-full max-w-sm items-center space-x-2"
       >
         <Input
+          className="text-md"
           type="text"
           value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
+          onChange={(e) =>
+            setNewCategory(
+              String(e.target.value).toLowerCase().replace(" ", "-")
+            )
+          }
           placeholder="Enter category name"
         />
         <Button
