@@ -18,14 +18,17 @@ import { useContext, useState } from "react";
 import { BudgetContext, BudgetEntry } from "./budget-provider";
 
 const DATE_FORMAT = "dd MMM";
+const DEFAULT_AMOUNT = "0.00";
 export default function Home() {
   const { budgets, addEntry, entries, removeEntry } = useContext(BudgetContext);
   const [category, setCategory] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(DEFAULT_AMOUNT);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const targetValue = e.target.value;
-    if (!isNaN(+targetValue)) setAmount(targetValue);
+    const numericValue = targetValue.replace(/\D/g, "");
+    const dollarValue = (parseInt(numericValue, 10) / 100).toFixed(2);
+    if (!isNaN(+dollarValue)) setAmount(dollarValue);
   };
   const handleAddEntry = () => {
     if (category === "" || Number(amount) <= 0) return;
@@ -34,7 +37,7 @@ export default function Home() {
     addEntry({ amount, category, date, id });
 
     // Cleanup
-    setAmount("");
+    setAmount(DEFAULT_AMOUNT);
     setCategory("");
   };
   return (
@@ -50,14 +53,13 @@ export default function Home() {
               type="text"
               id="amount"
               placeholder="$"
-              step="0.01"
               max="2500"
-              value={amount}
+              value={`$${amount}`}
               onChange={handleInputChange}
             />
           </div>
           <Select onValueChange={(val) => setCategory(val)} value={category}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[380px] truncate">
               <SelectValue placeholder="Select a budget" />
             </SelectTrigger>
             <SelectContent>
