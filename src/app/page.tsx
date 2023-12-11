@@ -12,17 +12,31 @@ import {
 import { Button } from "@app/components/ui/button";
 import { Input } from "@app/components/ui/input";
 import { Label } from "@app/components/ui/label";
-import { format } from "date-fns";
+import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { nanoid } from "nanoid";
 import { useContext, useState } from "react";
 import { BudgetContext, BudgetEntry } from "./budget-provider";
+import {
+  PopoverTrigger,
+  Popover,
+  PopoverContent,
+} from "@app/components/ui/popover";
+import { CalendarIcon } from "@radix-ui/react-icons";
+import { Calendar } from "@app/components/ui/calendar";
+import { DateRange } from "react-day-picker";
 
 const DATE_FORMAT = "dd MMM";
 const DEFAULT_AMOUNT = "0.00";
+const DEFAULT_DATE = {
+  from: subDays(new Date(), 7),
+  to: new Date(),
+};
 export default function Home() {
   const { budgets, addEntry, entries, removeEntry } = useContext(BudgetContext);
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState(DEFAULT_AMOUNT);
+  const [date, setDate] = useState<DateRange | undefined>(DEFAULT_DATE);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const targetValue = e.target.value;
@@ -39,6 +53,20 @@ export default function Home() {
     // Cleanup
     setAmount(DEFAULT_AMOUNT);
     setCategory("");
+  };
+
+  const rangeFilter = (entry: BudgetEntry) => {
+    const entryDate = new Date(entry.date);
+    const interval = {
+      start: date?.from || DEFAULT_DATE.from,
+      end: date?.to || DEFAULT_DATE.to,
+    };
+    interval.start = subDays(interval.start, 1);
+    interval.end = addDays(interval.end, 1);
+
+    const result = isWithinInterval(entry.date, interval);
+    console.log({ entryDate, interval, result });
+    return result;
   };
   return (
     <main className="">
@@ -85,9 +113,11 @@ export default function Home() {
       </div>
       <div className="mt-6">
         <p className="text-center">History</p>
+        <DateFilterButton onDateSet={setDate} date={date} />
       </div>
       <div className="mt-2 flex flex-col overflow-x-hidden border rounded-xl">
         {entries
+          .filter(rangeFilter)
           .slice(0)
           .reverse()
           .map((entry) => (
@@ -170,16 +200,55 @@ function EditableComponent({
       onTouchEnd={onTouchEnd}
     >
       <div className="w-8 text-center leading-none">
-        <span className="text-slate-700 text-xs">
+        <span className="text-muted-foreground text-xs">
           {format(entry.date, DATE_FORMAT)}
         </span>
       </div>
-      <div className="flex justify-between  w-full">
+      <div className="flex justify-between w-full">
         <span className="text-xs text-lime-600 p-1 font-bold text-left">
           {entry.category}
         </span>
         <div>${entry.amount}</div>
       </div>
     </div>
+  );
+}
+
+function DateFilterButton({
+  onDateSet,
+  date,
+}: {
+  onDateSet: (range: DateRange | undefined) => void;
+  date: DateRange | undefined;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Button variant="link" className="text-xs">
+          <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground mr-2" />
+          {date?.from ? (
+            date.to ? (
+              <>
+                {format(date.from, "LLL dd, y")} -{" "}
+                {format(date.to, "LLL dd, y")}
+              </>
+            ) : (
+              format(date.from, "LLL dd, y")
+            )
+          ) : (
+            <span>Pick a date</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 mx-auto">
+        <Calendar
+          initialFocus
+          mode="range"
+          defaultMonth={date?.from}
+          selected={date}
+          onSelect={onDateSet}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
