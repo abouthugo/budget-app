@@ -24,6 +24,9 @@ export default function BudgetPage() {
     setNewCategory("");
   };
 
+  const getTotal = () =>
+    Object.entries(budgets).reduce((acc, curr) => acc + curr[1], 0);
+
   return (
     <div>
       <h1 className="font-bold text-xl pb-5">Budgets</h1>
@@ -50,8 +53,11 @@ export default function BudgetPage() {
           Add
         </Button>
       </form>
-      <div className="flex flex-col w-full max-w-md justify-between border-b mt-4">
-        <h1 className="my-4 pl-2 text-xl font-bold">Totals</h1>
+      <div className="flex w-full max-w-md px-2 py-6 bg-slate-900 rounded-md mt-4 justify-center">
+        <h2 className="text-lg font-bold text-right">Total ${getTotal()}</h2>
+      </div>
+      <div className="flex flex-col w-full max-w-md justify-between border-b">
+        <h1 className="my-4 pl-2 text-xl font-bold">Budgets</h1>
         {Object.entries(budgets).map(([budget, total], i) => (
           <div
             key={`${budget}-${i}`}
