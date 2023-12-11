@@ -53,7 +53,7 @@ export default function BudgetPage() {
           Add
         </Button>
       </form>
-      <div className="flex w-full max-w-md px-2 py-6 bg-slate-900 rounded-md mt-4 justify-center">
+      <div className="flex w-full max-w-md px-2 py-6 bg-slate-900 rounded-xl mt-4 justify-center">
         <h2 className="text-lg font-bold text-right">Total ${getTotal()}</h2>
       </div>
       <div className="flex flex-col w-full max-w-md justify-between border-b">

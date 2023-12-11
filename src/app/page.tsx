@@ -12,12 +12,12 @@ import {
 import { Button } from "@app/components/ui/button";
 import { Input } from "@app/components/ui/input";
 import { Label } from "@app/components/ui/label";
-import { formatRelative } from "date-fns";
+import { format } from "date-fns";
 import { nanoid } from "nanoid";
 import { useContext, useState } from "react";
 import { BudgetContext, BudgetEntry } from "./budget-provider";
 
-const DATE_FORMAT = "MMM do h:mm a";
+const DATE_FORMAT = "dd MMM";
 export default function Home() {
   const { budgets, addEntry, entries, removeEntry } = useContext(BudgetContext);
   const [category, setCategory] = useState("");
@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <main className="">
       <h1 className="text-xl font-bold pb-5">Entries</h1>
-      <div className="p-6 border rounded-md">
+      <div className="p-4 border rounded-xl">
         <div className="flex items-end space-x-2 mb-6">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="amount">Amount</Label>
@@ -81,8 +81,10 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      <div className="mt-6 flex flex-col space-y-2 overflow-x-hidden">
+      <div className="mt-6">
         <p className="text-center">History</p>
+      </div>
+      <div className="mt-2 flex flex-col overflow-x-hidden border rounded-xl">
         {entries
           .slice(0)
           .reverse()
@@ -155,9 +157,9 @@ function EditableComponent({
   };
   return (
     <div
-      className={`py-2 flex justify-between items-center rounded-md ${
+      className={`py-2 flex px-4 space-x-8 items-center border-b last:border-b-0 ${
         isSwiping && Math.abs(touchStartX - touchCurrentX) > minSwipeDistance
-          ? "bg-red-800"
+          ? "bg-red-800 rounded-md"
           : ""
       }`}
       style={{ ...cardStyle }}
@@ -165,15 +167,15 @@ function EditableComponent({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div>
-        <span className="text-xs text-lime-600 p-1 font-bold">
-          {entry.category}
+      <div className="w-8 text-center leading-none">
+        <span className="text-slate-700 text-xs">
+          {format(entry.date, DATE_FORMAT)}
         </span>
       </div>
-      <div className="flex space-x-8">
-        <p className="w-40 truncate">
-          {formatRelative(entry.date, new Date())}
-        </p>
+      <div className="flex justify-between  w-full">
+        <span className="text-xs text-lime-600 p-1 font-bold text-left">
+          {entry.category}
+        </span>
         <div>${entry.amount}</div>
       </div>
     </div>
